@@ -7,36 +7,6 @@ const SUITS: [&str; 4] = ["♦️", "♠️", "♥️", "♣️"];
 
 pub const EMPTY: Card = 255;
 
-// pub fn from_str(card_given: &str) -> Card {
-//     let rank_given_str: &str = &card_given[0..1];
-//     let suit_given_str: &str = &card_given[1..2];
-
-//     let rank_given: u8 = {
-//         match rank_given_str {
-//             "A" => 1,
-//             "T" => 10,
-//             "J" => 11,
-//             "Q" => 12,
-//             "K" => 13,
-//             _ => rank_given_str.trim().parse().expect("Invalid rank"),
-//         }
-//     };
-
-//     let rank_given = rank_given - 1;
-
-//     let suit_given: u8 = {
-//         match suit_given_str {
-//             "D" => 0,
-//             "S" => 1,
-//             "H" => 2,
-//             "C" => 3,
-//             _ => 0,
-//         }
-//     };
-
-//     create(rank_given, suit_given)
-// }
-
 fn suit(card: Card) -> u8 {
     card / 13
 }
