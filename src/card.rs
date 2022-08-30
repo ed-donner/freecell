@@ -30,8 +30,9 @@ pub fn show(card: Card) -> String {
     }
 }
 
-// pub fn can_stack(card_above: Card, card_below: Card) -> bool {
-//     (card_below % 13 == 12)
-//         || ((card_below + 14) % 52 == card_above)
-//         || ((card_below + 40) % 52 == card_above)
-// }
+#[allow(dead_code)]
+#[inline(always)]
+pub fn can_stack(card_above: Card, card_below: Card) -> bool {
+    (card_below % 13 != 12)
+        && (((card_below + 14) % 52 == card_above) || ((card_below + 40) % 52 == card_above))
+}
