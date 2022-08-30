@@ -1,8 +1,11 @@
+use state::State;
+
 mod board;
 mod board_generator;
 mod card;
+mod state;
 
 fn main() {
-    let board = board_generator::generate(1);
-    board.display();
+    let state: State = State::with_board_number(1);
+    state.board.display();
 }
