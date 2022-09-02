@@ -18,6 +18,13 @@ impl Board {
         }
     }
 
+    pub fn is_solved(&self) -> bool {
+        self.foundation[0] == 12
+            && self.foundation[1] == 25
+            && self.foundation[2] == 38
+            && self.foundation[3] == 51
+    }
+
     pub fn longest(&self) -> u8 {
         return (0..8)
             .map(|i| self.lengths[i])

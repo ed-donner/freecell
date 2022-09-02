@@ -1,16 +1,15 @@
+use engine::solve;
 use state::State;
 
 mod board;
 mod board_generator;
 mod card;
+mod engine;
 mod moves;
 mod state;
 
 fn main() {
-    let state: State = State::with_board_number(7);
-    state.board.display();
-    let states: Vec<State> = state.next_states();
-    for state in states {
-        state.display();
-    }
+    let initial: State = State::with_board_number(7);
+    let final_state: State = solve(initial);
+    final_state.display();
 }
