@@ -6,12 +6,13 @@ const RANKS: [&str; 13] = [
 const SUITS: [&str; 4] = ["♦️", "♠️", "♥️", "♣️"];
 
 pub const EMPTY: Card = 255;
+pub const FULL: usize = 254;
 
-fn suit(card: Card) -> u8 {
+pub fn suit(card: Card) -> u8 {
     card / 13
 }
 
-fn rank(card: Card) -> u8 {
+pub fn rank(card: Card) -> u8 {
     card % 13
 }
 
@@ -21,7 +22,7 @@ pub fn create(rank: u8, suit: u8) -> Card {
 
 pub fn show(card: Card) -> String {
     if card == EMPTY {
-        String::from("---")
+        String::from("   ")
     } else {
         let rank: &str = RANKS[rank(card) as usize];
         let suit: &str = SUITS[suit(card) as usize];
@@ -30,7 +31,6 @@ pub fn show(card: Card) -> String {
     }
 }
 
-#[allow(dead_code)]
 #[inline(always)]
 pub fn can_stack(card_above: Card, card_below: Card) -> bool {
     (card_below % 13 != 12)

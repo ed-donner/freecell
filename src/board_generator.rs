@@ -63,7 +63,7 @@ pub fn generate(seed: u32) -> Board {
     let mut board = Board::new();
     for (i, card) in deck.iter().enumerate() {
         let cascade = i % 8;
-        board.cascades[cascade].push(*card);
+        board.push(cascade, *card);
     }
     board
 }

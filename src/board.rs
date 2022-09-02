@@ -1,9 +1,11 @@
-use crate::card::{show, Card, EMPTY};
+use crate::card::{show, Card, EMPTY, FULL};
 
+#[derive(Copy, Clone)]
 pub struct Board {
     pub cells: [Card; 4],
     pub foundation: [Card; 4],
-    pub cascades: [Vec<Card>; 8],
+    pub cascades: [[Card; 20]; 8],
+    pub lengths: [u8; 8],
 }
 
 impl Board {
@@ -11,45 +13,57 @@ impl Board {
         Board {
             cells: [EMPTY, EMPTY, EMPTY, EMPTY],
             foundation: [EMPTY, EMPTY, EMPTY, EMPTY],
-            cascades: [
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            ],
+            cascades: [[EMPTY; 20]; 8],
+            lengths: [0; 8],
         }
     }
 
-    pub fn rows(&self) -> usize {
+    pub fn longest(&self) -> u8 {
         return (0..8)
-            .map(|i| self.cascades[i].len())
+            .map(|i| self.lengths[i])
             .max()
             .expect("Problem finding number of rows");
+    }
+
+    pub fn first_open_cell(&self) -> usize {
+        if self.cells[0] == EMPTY {
+            return 0;
+        }
+        if self.cells[1] == EMPTY {
+            return 1;
+        }
+        if self.cells[2] == EMPTY {
+            return 2;
+        }
+        if self.cells[3] == EMPTY {
+            return 3;
+        }
+        return FULL;
+    }
+
+    pub fn push(&mut self, col: usize, card: Card) {
+        self.cascades[col][(self.lengths[col] as usize)] = card;
+        self.lengths[col] += 1;
     }
 
     pub fn display(&self) {
         print!("\nBOARD\nF ");
         for c in self.foundation {
-            print!("[{}] ", show(c));
+            print!("[{} ] ", show(c));
         }
         print!(" C ");
         for c in self.cells {
-            print!("[{}] ", show(c));
+            print!("[{} ] ", show(c));
         }
         print!("\n\n  ");
         for col in 1..9 {
             print!("   {}  ", col);
         }
-        for row in 0..self.rows() {
+        for row in 0..self.longest() {
             print!("\n  ");
             for col in 0..8 {
-                let cascade_length = self.cascades[col].len();
-                if row < cascade_length {
-                    print!("[{} ] ", show(self.cascades[col][row]));
+                if row < self.lengths[col] {
+                    print!("[{} ] ", show(self.cascades[col][row as usize]));
                 } else {
                     print!("[   ] ");
                 }
