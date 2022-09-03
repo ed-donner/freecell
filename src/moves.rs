@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash, Debug)]
 pub enum Move {
     CascadeToCascade { from: u8, to: u8, count: u8 },
     CascadeToCell { from: u8, cell: u8 },
@@ -6,6 +6,7 @@ pub enum Move {
     CellToFoundation { cell: u8 },
     CellToCascade { cell: u8, to: u8 },
 }
+
 impl Move {
     pub fn display(&self) {
         match *self {

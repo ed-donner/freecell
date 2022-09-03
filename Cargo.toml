@@ -1,5 +1,5 @@
 [package]
-name = "fc"
+name = "freecell"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.4"
+priority-queue = "1.2.3"
+rustc-hash = "1.1.0"

@@ -1,6 +1,6 @@
-use crate::card::{show, Card, EMPTY, FULL};
+use crate::card::{eval, show, Card, EMPTY, FULL};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Board {
     pub cells: [Card; 4],
     pub foundation: [Card; 4],
@@ -23,6 +23,83 @@ impl Board {
             && self.foundation[1] == 25
             && self.foundation[2] == 38
             && self.foundation[3] == 51
+    }
+
+    // pub fn cascade_starting_with(&self, c: Card) -> [Card; 20] {
+    //     for i in 0..8 {
+    //         let cascade = self.cascades[i];
+    //         if cascade[0] == c {
+    //             return cascade;
+    //         }
+    //     }
+    //     return self.cascades[0];
+    // }
+
+    // pub fn normalize(&self) {
+    //     let mut headers = [EMPTY; 8];
+    //     for i in 0..8 {
+    //         headers[i] = self.cascades[i][0];
+    //     }
+    //     headers.sort();
+    //     let mut new_cascades = [[EMPTY; 20]; 8];
+    //     for i in 0..8 {
+    //         new_cascades[i] =
+    //     }
+    // }
+
+    pub fn count_empty_cells(&self) -> u8 {
+        let mut count = 0;
+        if self.cells[0] == EMPTY {
+            count += 1
+        };
+        if self.cells[1] == EMPTY {
+            count += 1
+        };
+        if self.cells[2] == EMPTY {
+            count += 1
+        };
+        if self.cells[3] == EMPTY {
+            count += 1
+        };
+        count
+    }
+
+    pub fn count_empty_cascades(&self) -> u8 {
+        let mut count: u8 = 0;
+        if self.lengths[0] == 0 {
+            count += 1;
+        }
+        if self.lengths[1] == 0 {
+            count += 1;
+        }
+        if self.lengths[2] == 0 {
+            count += 1;
+        }
+        if self.lengths[3] == 0 {
+            count += 1;
+        }
+        if self.lengths[4] == 0 {
+            count += 1;
+        }
+        if self.lengths[5] == 0 {
+            count += 1;
+        }
+        if self.lengths[6] == 0 {
+            count += 1;
+        }
+        if self.lengths[7] == 0 {
+            count += 1;
+        }
+        count
+    }
+
+    pub fn eval(&self) -> u8 {
+        (4 - self.count_empty_cells())
+            // + (8 - self.count_empty_cascades())
+            + eval(self.foundation[0])
+            + eval(self.foundation[1])
+            + eval(self.foundation[2])
+            + eval(self.foundation[3])
     }
 
     pub fn longest(&self) -> u8 {

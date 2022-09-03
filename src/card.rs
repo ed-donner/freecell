@@ -8,14 +8,26 @@ const SUITS: [&str; 4] = ["♦️", "♠️", "♥️", "♣️"];
 pub const EMPTY: Card = 255;
 pub const FULL: usize = 254;
 
+#[inline(always)]
 pub fn suit(card: Card) -> u8 {
     card / 13
 }
 
+#[inline(always)]
 pub fn rank(card: Card) -> u8 {
     card % 13
 }
 
+#[inline(always)]
+pub fn eval(card: Card) -> u8 {
+    if card == EMPTY {
+        0
+    } else {
+        (rank(card) + 1) * 2
+    }
+}
+
+#[inline(always)]
 pub fn create(rank: u8, suit: u8) -> Card {
     suit * 13 + rank
 }
