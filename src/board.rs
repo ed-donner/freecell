@@ -1,4 +1,4 @@
-use crate::card::{eval, show, Card, EMPTY, FULL};
+use crate::card::{eval, rank, show, suit, Card, EMPTY, FULL};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Board {
@@ -25,29 +25,16 @@ impl Board {
             && self.foundation[3] == 51
     }
 
-    // pub fn cascade_starting_with(&self, c: Card) -> [Card; 20] {
-    //     for i in 0..8 {
-    //         let cascade = self.cascades[i];
-    //         if cascade[0] == c {
-    //             return cascade;
-    //         }
-    //     }
-    //     return self.cascades[0];
-    // }
+    pub fn can_put_on_foundation(&self, card: Card) -> bool {
+        let c_suit = suit(card);
+        let c_rank = rank(card);
+        let foundation = self.foundation[c_suit as usize];
+        let f_rank = rank(foundation);
+        ((c_rank == 0) && (foundation == EMPTY))
+            || ((foundation != EMPTY) && (c_rank == f_rank + 1))
+    }
 
-    // pub fn normalize(&self) {
-    //     let mut headers = [EMPTY; 8];
-    //     for i in 0..8 {
-    //         headers[i] = self.cascades[i][0];
-    //     }
-    //     headers.sort();
-    //     let mut new_cascades = [[EMPTY; 20]; 8];
-    //     for i in 0..8 {
-    //         new_cascades[i] =
-    //     }
-    // }
-
-    pub fn count_empty_cells(&self) -> u8 {
+    pub fn count_empty_cells(&self) -> i32 {
         let mut count = 0;
         if self.cells[0] == EMPTY {
             count += 1
@@ -93,20 +80,31 @@ impl Board {
         count
     }
 
-    pub fn eval(&self) -> u8 {
-        (4 - self.count_empty_cells())
-            // + (8 - self.count_empty_cascades())
+    pub fn eval(&self) -> i32 {
+        self.count_empty_cells() * 3
             + eval(self.foundation[0])
             + eval(self.foundation[1])
             + eval(self.foundation[2])
             + eval(self.foundation[3])
+            - self.foundation_penalties()
+    }
+
+    pub fn foundation_penalties(&self) -> i32 {
+        let mut penalty = 0;
+        for i in 0..8 {
+            let length = self.lengths[i] as usize;
+            for j in 0..length {
+                let card = self.cascades[i][j];
+                if self.can_put_on_foundation(card) {
+                    penalty += length - j
+                }
+            }
+        }
+        penalty as i32
     }
 
     pub fn longest(&self) -> u8 {
-        return (0..8)
-            .map(|i| self.lengths[i])
-            .max()
-            .expect("Problem finding number of rows");
+        return (0..8).map(|i| self.lengths[i]).max().unwrap();
     }
 
     pub fn first_open_cell(&self) -> usize {
@@ -128,6 +126,10 @@ impl Board {
     pub fn push(&mut self, col: usize, card: Card) {
         self.cascades[col][(self.lengths[col] as usize)] = card;
         self.lengths[col] += 1;
+    }
+
+    pub fn as_record(&self) -> BoardRecord {
+        return BoardRecord::from(*self);
     }
 
     pub fn display(&self) {
@@ -154,5 +156,39 @@ impl Board {
             }
         }
         println!();
+    }
+}
+
+#[derive(PartialEq, Eq, Hash)]
+pub struct BoardRecord {
+    pub foundation: [Card; 4],
+    pub cascades: [[Card; 20]; 8],
+}
+
+impl BoardRecord {
+    pub fn cascade_starting_with(base: Board, c: Card) -> [Card; 20] {
+        for i in 0..8 {
+            let cascade = base.cascades[i];
+            if cascade[0] == c {
+                return cascade;
+            }
+        }
+        return base.cascades[0];
+    }
+
+    pub fn from(base: Board) -> BoardRecord {
+        let mut headers = [EMPTY; 8];
+        for i in 0..8 {
+            headers[i] = base.cascades[i][0];
+        }
+        headers.sort();
+        let mut new_cascades = [[EMPTY; 20]; 8];
+        for i in 0..8 {
+            new_cascades[i] = BoardRecord::cascade_starting_with(base, headers[i]);
+        }
+        BoardRecord {
+            foundation: base.foundation,
+            cascades: new_cascades,
+        }
     }
 }

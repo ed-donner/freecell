@@ -19,11 +19,11 @@ pub fn rank(card: Card) -> u8 {
 }
 
 #[inline(always)]
-pub fn eval(card: Card) -> u8 {
+pub fn eval(card: Card) -> i32 {
     if card == EMPTY {
         0
     } else {
-        (rank(card) + 1) * 2
+        ((rank(card) + 1) as i32) * 10
     }
 }
 

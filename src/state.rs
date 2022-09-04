@@ -3,6 +3,7 @@ use crate::board_generator;
 use crate::card;
 use crate::card::{can_stack, rank, suit, Card, EMPTY, FULL};
 use crate::moves::Move;
+use std::cmp::Ordering;
 
 #[derive(Clone, Hash, Debug)]
 pub struct State {
@@ -13,6 +14,18 @@ pub struct State {
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
         self.board == other.board
+    }
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.eval().cmp(&other.eval())
+    }
+}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -40,22 +53,21 @@ impl State {
         self.board.is_solved()
     }
 
-    pub fn eval(&self) -> u8 {
+    pub fn eval(&self) -> i32 {
         let mut penalty = 4;
         let depth = self.moves.len();
-        if depth > 100 {
-            penalty -= 1;
-        }
         if depth > 200 {
-            penalty -= 1;
-        }
-        if depth > 300 {
             penalty -= 1;
         }
         if depth > 400 {
             penalty -= 1;
         }
-        penalty = 1;
+        if depth > 600 {
+            penalty -= 1;
+        }
+        if depth > 800 {
+            penalty -= 1;
+        }
         penalty + self.board.eval()
     }
 
@@ -70,8 +82,8 @@ impl State {
     ) {
         let mut next: State = self.clone();
         for i in 0..count {
-            next.board.cascades[to][to_len + i] = next.board.cascades[from][from_len - 1 - i];
-            next.board.cascades[from][from_len - 1 - i] = EMPTY;
+            next.board.cascades[to][to_len + i] = next.board.cascades[from][from_len - count + i];
+            next.board.cascades[from][from_len - count + i] = EMPTY;
         }
         next.board.lengths[to] += count as u8;
         next.board.lengths[from] -= count as u8;
@@ -156,9 +168,9 @@ impl State {
         from: usize,
         from_len: usize,
         to: usize,
+        to_len: usize,
         count: usize,
     ) {
-        let to_len = self.board.lengths[to] as usize;
         if to_len == 0 {
             self.do_c2c(states, from, from_len, to, 0, count);
         } else {
@@ -180,10 +192,18 @@ impl State {
     ) {
         let mut finished = false;
         let mut count: usize = 1;
+        let to_len = self.board.lengths[to] as usize;
+        let adjusted_combo_max = {
+            if to_len > 0 {
+                combo_max
+            } else {
+                combo_max / 2
+            }
+        };
         while !finished {
             finished = true;
-            self.c2c(states, from, from_len, to, count);
-            if (count < combo_max) && ((count + 1) <= from_len) {
+            self.c2c(states, from, from_len, to, to_len, count);
+            if (count < adjusted_combo_max) && ((count + 1) <= from_len) {
                 let card_above = self.board.cascades[from][from_len - count - 1];
                 let card_below = self.board.cascades[from][from_len - count];
                 if can_stack(card_above, card_below) {
@@ -213,14 +233,8 @@ impl State {
             let from_len = self.board.lengths[from] as usize;
             if from_len != 0 {
                 let from_card = self.board.cascades[from][from_len - 1];
-                let suit = suit(from_card);
-                let rank = rank(from_card);
-                let foundation = self.board.foundation[suit as usize];
-                let f_rank = card::rank(foundation);
-                if ((rank == 0) && (foundation == EMPTY))
-                    || ((foundation != EMPTY) && (rank == f_rank + 1))
-                {
-                    self.do_c2f(states, from, from_len, from_card, suit);
+                if self.board.can_put_on_foundation(from_card) {
+                    self.do_c2f(states, from, from_len, from_card, suit(from_card));
                 }
             }
         }
@@ -243,14 +257,8 @@ impl State {
         for cell in 0..4 {
             let card: Card = self.board.cells[cell];
             if card != EMPTY {
-                let suit = suit(card);
-                let rank = card::rank(card);
-                let foundation = self.board.foundation[suit as usize];
-                let f_rank = card::rank(foundation);
-                if ((rank == 0) && (foundation == EMPTY))
-                    || ((foundation != EMPTY) && (rank == f_rank + 1))
-                {
-                    self.do_cell2f(states, cell, card, suit);
+                if self.board.can_put_on_foundation(card) {
+                    self.do_cell2f(states, cell, card, suit(card));
                 }
             }
         }
